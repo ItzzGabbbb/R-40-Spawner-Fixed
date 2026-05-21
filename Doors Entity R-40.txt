@@ -1,0 +1,248 @@
+---====== Load Spawner ======---
+
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+
+---====== Magenta Light Function ======---
+
+function light(tim, color0, color1)
+	local tweenservice = game:GetService("TweenService")
+	local info = TweenInfo.new(tim, Enum.EasingStyle.Linear)
+
+	for _, light in pairs(game.Workspace.CurrentRooms:GetDescendants()) do
+		if light:IsA("Light") or light:IsA("SurfaceLight") or light:IsA("SpotLight") then
+			local target = {Color = color1}
+			local anim = tweenservice:Create(light, info, target)
+			anim:Play()
+		end
+
+		if light:IsA("MeshPart")
+			and light.Material == Enum.Material.Neon
+			and light.Name ~= "Skybox" then
+
+			local target1 = {Color = color0}
+			local anim2 = tweenservice:Create(light, info, target1)
+			anim2:Play()
+		end
+	end
+end
+
+---====== Create R-40 Entity ======---
+
+local entity = spawner.Create({
+	Entity = {
+		Name = "R-40",
+		Asset = "rbxassetid://13491920390",
+		HeightOffset = 0
+	},
+
+	Lights = {
+		Flicker = {
+			Enabled = false,
+			Duration = 10
+		},
+		Shatter = false,
+		Repair = false
+	},
+
+	Earthquake = {
+		Enabled = false
+	},
+
+	CameraShake = {
+		Enabled = true,
+		Range = 150,
+		Values = {1.5, 20, 0.1, 1}
+	},
+
+	Movement = {
+		Speed = 70,
+		Delay = 4,
+		Reversed = false
+	},
+
+	Rebounding = {
+		Enabled = true,
+		Type = "Ambush",
+		Min = 1.5,
+		Max = 2.5,
+		Delay = 0.7
+	},
+
+	Damage = {
+		Enabled = true,
+		Range = 52.5,
+		Amount = 125
+	},
+
+	Crucifixion = {
+		Enabled = true,
+		Range = 40,
+		Resist = false,
+		Break = true
+	},
+
+	Death = {
+		Type = "Curious",
+		Hints = {
+			"Oh..Hey... So you've decided to come back.",
+			"So, who did you die to?",
+			"Oh, the pink smiley guy, hes different from the others, maybe try learning.",
+			"You'll be back... i suppose."
+		},
+		Cause = "R-40"
+	}
+})
+
+---====== Debug Callbacks ======---
+
+entity:SetCallback("OnSpawned", function()
+	print("R-40 has spawned")
+end)
+
+entity:SetCallback("OnStartMoving", function()
+	print("R-40 started moving")
+end)
+
+entity:SetCallback("OnEnterRoom", function(room, firstTime)
+	if firstTime then
+		print("R-40 entered room: "..room.Name)
+	else
+		print("R-40 re-entered room: "..room.Name)
+	end
+end)
+
+entity:SetCallback("OnRebounding", function(startOfRebound)
+	if startOfRebound then
+		print("R-40 started rebounding")
+	else
+		print("R-40 finished rebounding")
+	end
+end)
+
+entity:SetCallback("OnDespawning", function()
+	print("R-40 is despawning")
+end)
+
+---====== Achievement ======---
+
+entity:SetCallback("OnDespawned", function()
+	print("R-40 has despawned")
+
+	local achievementGiver = loadstring(game:HttpGet(
+		"https://raw.githubusercontent.com/Voor-Pr00/Achivements/refs/heads/main/Voorpr0"
+	))()
+
+	achievementGiver({
+		Title = "Shouting in Magenta",
+		Desc = "Such vibration...",
+		Reason = "Encounter R-40",
+		Image = "rbxassetid://80762212487854"
+	})
+end)
+
+---====== Custom Magenta Jumpscare ======---
+
+entity:SetCallback("OnDamagePlayer", function(newHealth)
+
+	local sound = Instance.new("Sound", game.Workspace)
+	sound.SoundId = "rbxassetid://131138848"
+
+	local octave = Instance.new("PitchShiftSoundEffect", sound)
+	octave.Octave = 0.5
+
+	local level = Instance.new("DistortionSoundEffect", sound)
+	level.Level = 0.97
+
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "R40_Jumpscare"
+	screen.Parent = game.Players.LocalPlayer.PlayerGui
+
+	--- Black background
+
+	local background = Instance.new("Frame")
+	background.Parent = screen
+	background.AnchorPoint = Vector2.new(0.5, 0.5)
+	background.Position = UDim2.new(0.5, 0, 0.5, 0)
+	background.Size = UDim2.new(10, 0, 10, 0)
+	background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+	--- Magenta flashing overlay
+
+	local overlay = Instance.new("Frame")
+	overlay.Parent = screen
+	overlay.AnchorPoint = Vector2.new(0.5, 0.5)
+	overlay.Position = UDim2.new(0.5, 0, 0.5, 0)
+	overlay.Size = UDim2.new(10, 0, 10, 0)
+	overlay.BackgroundColor3 = Color3.fromRGB(255, 0, 255)
+	overlay.BackgroundTransparency = 0.45
+
+	--- New decal image
+
+	local image = Instance.new("ImageLabel")
+	image.Parent = screen
+	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	image.Position = UDim2.new(0.5, 0, 0.5, 0)
+	image.BackgroundTransparency = 1
+	image.Size = UDim2.new(0, 50, 0, 50)
+	image.BorderSizePixel = 0
+	image.Image = "rbxassetid://80762212487854"
+
+	--- Flashing effect
+
+	task.spawn(function()
+		while task.wait(0.08) do
+			overlay.BackgroundColor3 = Color3.fromRGB(255, 0, 255)
+			task.wait(0.08)
+			overlay.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+		end
+	end)
+
+	sound:Play()
+
+	game:GetService("TweenService"):Create(
+		image,
+		TweenInfo.new(0.25, Enum.EasingStyle.Linear),
+		{
+			Size = UDim2.new(0, 1300, 0, 1300)
+		}
+	):Play()
+
+	task.wait(1)
+
+	screen:Destroy()
+
+	if newHealth == 0 then
+		print("R-40 killed the player")
+	else
+		print("R-40 damaged the player")
+	end
+end)
+
+---====== Pre-Spawn Magenta Effect ======---
+
+light(
+	2,
+	Color3.fromRGB(255, 0, 255),
+	Color3.fromRGB(200, 0, 255)
+)
+
+local sound = Instance.new("Sound", game.Workspace)
+sound.SoundId = "rbxassetid://12221990"
+sound.PlaybackSpeed = 0.2
+sound.Volume = 1
+
+local octave = Instance.new("PitchShiftSoundEffect", sound)
+octave.Octave = 0.5
+
+local lvl = Instance.new("DistortionSoundEffect", sound)
+lvl.Level = 0.85
+
+sound:Play()
+
+wait(2)
+
+sound:Destroy()
+
+---====== Run Entity ======---
+
+entity:Run()
